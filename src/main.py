@@ -2,11 +2,12 @@ import numpy as np
 from PIL import Image
 import noise
 import random
-import imageio
+import math
+import os
 
 def generate_trippy_frame(width, height, scale, octaves, persistence, lacunarity, z):
     """
-    Generate a single frame of trippy Perlin noise.
+    Generate a single frame of trippy Perlin noise with psychedelic color mapping.
     """
     img = np.zeros((height, width, 3), dtype=np.uint8)
 
@@ -34,14 +35,20 @@ def generate_trippy_frame(width, height, scale, octaves, persistence, lacunarity
 
 
 def create_trippy_gif(filename="trippy.gif", width=512, height=512, frames=60):
-    scale = 0.01
-    octaves = 6
-    persistence = 0.5
-    lacunarity = 2.0
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
 
     images = []
     for i in range(frames):
         print(f"Generating frame {i+1}/{frames}...")
+
+        # Animate parameters in a smooth and looping way
+        t = i / frames * 2 * math.pi
+        scale = 0.005 + 0.005 * math.sin(t)  # oscillates between 0.005 and 0.01
+        octaves = random.randint(3, 7)       # randomized for complexity variation
+        persistence = 0.3 + 0.4 * abs(math.sin(t * 2))  # 0.3 to 0.7
+        lacunarity = 1.5 + 0.8 * abs(math.cos(t))       # 1.5 to 2.3
+
         frame = generate_trippy_frame(width, height, scale, octaves, persistence, lacunarity, z=i * 0.1)
         images.append(Image.fromarray(frame))
 
@@ -51,4 +58,4 @@ def create_trippy_gif(filename="trippy.gif", width=512, height=512, frames=60):
 
 
 if __name__ == "__main__":
-    create_trippy_gif("trippy_animation.gif")
+    create_trippy_gif("output/trippy_animation.gif")
